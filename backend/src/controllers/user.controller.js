@@ -77,7 +77,13 @@ const register = async (req, res) => {
 
 
 const getUserHistory = async (req, res) => {
-    const { token } = req.query;
+    // Get token from Authorization header
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(' ')[1];
+
+    if (!token) {
+        return res.status(httpStatus.UNAUTHORIZED).json({ message: "Token required" });
+    }
 
     try {
         // Verify JWT token
@@ -102,7 +108,15 @@ const getUserHistory = async (req, res) => {
 }
 
 const addToHistory = async (req, res) => {
-    const { token, meeting_code } = req.body;
+    // Get token from Authorization header
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(' ')[1];
+
+    if (!token) {
+        return res.status(httpStatus.UNAUTHORIZED).json({ message: "Token required" });
+    }
+
+    const { meeting_code } = req.body;
 
     try {
         // Verify JWT token
@@ -134,7 +148,9 @@ const addToHistory = async (req, res) => {
 
 // Verify token endpoint
 const verifyToken = async (req, res) => {
-    const { token } = req.query;
+    // Get token from Authorization header
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(' ')[1];
 
     if (!token) {
         return res.status(httpStatus.UNAUTHORIZED).json({ message: "Token required" });

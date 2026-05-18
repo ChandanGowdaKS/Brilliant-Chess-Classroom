@@ -11,7 +11,19 @@ const client = axios.create({
     baseURL: `${server}/api/v1/users`
 })
 
-// Add request interceptor to check token expiration
+// Add request interceptor to add token to headers
+client.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
+// Add response interceptor to check token expiration
 client.interceptors.response.use(
     (response) => response,
     (error) => {
@@ -42,9 +54,7 @@ export const AuthProvider = ({ children }) => {
         const token = localStorage.getItem("token");
         if (token) {
             // Try to verify token by making a simple request
-            client.get("/verify", {
-                params: { token }
-            }).catch(() => {
+            client.get("/verify").catch(() => {
                 // If verification fails, clear token
                 localStorage.removeItem("token");
             });
@@ -90,14 +100,9 @@ export const AuthProvider = ({ children }) => {
 
     const getHistoryOfUser = async () => {
         try {
-            let request = await client.get("/get_all_activity", {
-                params: {
-                    token: localStorage.getItem("token")
-                }
-            });
+            let request = await client.get("/get_all_activity");
             return request.data
-        } catch
-         (err) {
+        } catch (err) {
             throw err;
         }
     }
@@ -105,7 +110,6 @@ export const AuthProvider = ({ children }) => {
     const addToUserHistory = async (meetingCode) => {
         try {
             let request = await client.post("/add_to_activity", {
-                token: localStorage.getItem("token"),
                 meeting_code: meetingCode
             });
             return request
