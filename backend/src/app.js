@@ -16,7 +16,23 @@ const io = connectToSocket(server);
 
 
 app.set("port", (process.env.PORT || 8000))
-app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:3000" }));
+const allowedOrigins = [
+    process.env.CORS_ORIGIN,
+    "http://localhost:3000",
+    "https://brilliant-chess-classroom-frontend1.onrender.com",
+    // Add your actual frontend URL here
+].filter(Boolean);
+
+app.use(cors({ 
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true 
+}));
 app.use(express.json({ limit: "40kb" }));
 app.use(express.urlencoded({ limit: "40kb", extended: true }));
 
